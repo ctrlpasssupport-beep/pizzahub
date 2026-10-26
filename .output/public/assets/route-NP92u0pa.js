@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-dev-runtime-WYi_Fq32.js";import{H as t}from"./index-ep8D5-6i.js";var n=e(),r=`/app/applet/src/routes/_authenticated/route.tsx?tsr-split=component`,i=()=>(0,n.jsxDEV)(t,{},void 0,!1,{fileName:r,lineNumber:2,columnNumber:30},void 0);export{i as component};

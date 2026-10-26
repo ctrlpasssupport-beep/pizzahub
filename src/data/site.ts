@@ -1,0 +1,28 @@
+export const site = {
+  name: "Subday Pizza",
+  tagline: "Delicious",
+  phone: "8796130029",
+  whatsapp: "918796130029",
+  address: "Sector 4, Gurugram, Haryana - 122006",
+  city: "Gurugram",
+  hours: "11:00 AM – 11:00 PM (All 7 Days)",
+  mapsUrl: "https://maps.google.com/?q=Sector+4+Gurugram",
+  delivery: {
+    minOrder: 399,
+    radiusKm: 5,
+  },
+  partyHall: {
+    packagePrice: 1500,
+    hourlyRate: 400,
+    threeHourRate: 1000,
+    packageItems: [
+      "Any 2 Large Pizzas of Choice",
+      "Any 2 Gourmet Burgers",
+      "Garlic Bread with Cheese Dip",
+      "2 Premium Thick Shakes or Coolers",
+      "Decorated Party Setup & Sound System",
+    ],
+  },
+};
+
+export const telHref = `tel:${site.phone}`;
