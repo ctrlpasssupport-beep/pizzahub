@@ -1,16 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { Mail, Sparkles } from "lucide-react";
+import { Mail, Lock, User, LogIn, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-import { supabase } from "@/integrations/supabase/client";
-import { sendLoginCode, verifyLoginCode } from "@/lib/email-login.functions";
+import { signInWithGoogle, signInWithEmail, signUpWithEmail } from "@/lib/auth";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -18,7 +11,7 @@ export const Route = createFileRoute("/auth")({
       { title: "Sign in — Subday Pizza Gurugram" },
       {
         name: "description",
-        content: "Sign in to Subday Pizza with your Google Account or email code.",
+        content: "Sign in to Subday Pizza with your Google Account or email.",
       },
       { property: "og:title", content: "Sign in — Subday Pizza" },
       {
@@ -32,17 +25,15 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const send = useServerFn(sendLoginCode);
-  const verify = useServerFn(verifyLoginCode);
   const [email, setEmail] = useState("");
-  const [step, setStep] = useState<"email" | "code">("email");
-  const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  async function google() {
+  async function handleGoogleSignIn() {
     setBusy(true);
     try {
-      const { signInWithGoogle } = await import("@/lib/auth");
       const user = await signInWithGoogle();
       toast.success(`Welcome back, ${user.displayName || user.email}!`);
       navigate({ to: "/account" });
@@ -54,42 +45,44 @@ function AuthPage() {
     }
   }
 
-  async function sendCode(e: React.FormEvent) {
+  async function handleEmailAuth(e: React.FormEvent) {
     e.preventDefault();
-    setBusy(true);
-    const r = await send({ data: { email } }).catch(
-      () => ({ ok: false, error: "Something went wrong." }) as const,
-    );
-    setBusy(false);
-    if (!r.ok) {
-      toast.error(r.error);
+    if (!email || !password) {
+      toast.error("Please provide both email and password.");
       return;
     }
-    toast.success("Code sent — check your inbox.");
-    setStep("code");
-  }
+    if (isSignUp && password.length < 6) {
+      toast.error("Password must be at least 6 characters.");
+      return;
+    }
 
-  async function verifyCode() {
     setBusy(true);
-    const r = await verify({ data: { email, code } }).catch(
-      () => ({ ok: false, error: "Something went wrong." }) as const,
-    );
-    if (!r.ok) {
+    try {
+      if (isSignUp) {
+        const user = await signUpWithEmail(email, password, displayName);
+        toast.success(`Account created! Welcome, ${user.displayName || user.email}!`);
+      } else {
+        const user = await signInWithEmail(email, password);
+        toast.success(`Welcome back, ${user.displayName || user.email}!`);
+      }
+      navigate({ to: "/account" });
+    } catch (err: any) {
+      console.error(err);
+      const msg = err?.message || "Authentication failed.";
+      if (
+        msg.includes("user-not-found") ||
+        msg.includes("wrong-password") ||
+        msg.includes("invalid-credential")
+      ) {
+        toast.error("Invalid email or password.");
+      } else if (msg.includes("email-already-in-use")) {
+        toast.error("An account with this email already exists. Try signing in.");
+      } else {
+        toast.error(msg);
+      }
+    } finally {
       setBusy(false);
-      toast.error(r.error);
-      return;
     }
-    const { error } = await supabase.auth.verifyOtp({
-      token_hash: r.tokenHash,
-      type: "magiclink",
-    });
-    setBusy(false);
-    if (error) {
-      toast.error("Sign-in failed. Request a new code.");
-      return;
-    }
-    toast.success("Welcome to Subday Pizza!");
-    navigate({ to: "/account" });
   }
 
   return (
@@ -105,22 +98,25 @@ function AuthPage() {
           <span className="grid size-14 mx-auto place-items-center rounded-full bg-[#fac564] text-2xl text-[#121618] mb-4 shadow-lg">
             🍕
           </span>
-          <span className="font-cursive text-xl text-[#fac564]">Welcome Back</span>
+          <span className="font-cursive text-xl text-[#fac564]">
+            {isSignUp ? "Join Us" : "Welcome Back"}
+          </span>
           <h1 className="font-display text-3xl font-bold uppercase tracking-wider text-white mt-1">
-            Pizza<span className="text-[#fac564]">Hub</span> Account
+            Subday<span className="text-[#fac564]">Pizza</span> Account
           </h1>
           <p className="mt-2 text-xs sm:text-sm text-white/60">
-            Sign in with Google to save your delivery addresses and access restaurant administration.
+            Sign in with Google or email to access live orders, table reservations, and administrator controls.
           </p>
         </div>
 
         {/* Google Authentication Button */}
         <Button
+          type="button"
           variant="hero"
           size="lg"
           className="mt-8 w-full py-4 text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-3 shadow-[0_4px_20px_rgba(250,197,100,0.3)]"
           disabled={busy}
-          onClick={google}
+          onClick={handleGoogleSignIn}
         >
           <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
             <path
@@ -132,12 +128,29 @@ function AuthPage() {
         </Button>
 
         <div className="my-6 flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-white/40">
-          <span className="h-px flex-1 bg-white/10" /> or email code{" "}
+          <span className="h-px flex-1 bg-white/10" /> or email{" "}
           <span className="h-px flex-1 bg-white/10" />
         </div>
 
-        {step === "email" ? (
-          <form onSubmit={sendCode} className="space-y-4">
+        <form onSubmit={handleEmailAuth} className="space-y-4">
+          {isSignUp && (
+            <div className="relative">
+              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-white/40" />
+              <input
+                type="text"
+                required={isSignUp}
+                maxLength={100}
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Your Full Name"
+                className="w-full bg-[#0e1113] border border-white/15 pl-10 pr-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-[#fac564] focus:outline-none rounded"
+                aria-label="Name"
+              />
+            </div>
+          )}
+
+          <div className="relative">
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-white/40" />
             <input
               type="email"
               required
@@ -145,65 +158,59 @@ function AuthPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full bg-[#0e1113] border border-white/15 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-[#fac564] focus:outline-none rounded"
+              className="w-full bg-[#0e1113] border border-white/15 pl-10 pr-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-[#fac564] focus:outline-none rounded"
               aria-label="Email"
             />
-            <Button
-              type="submit"
-              variant="outlineWhite"
-              size="lg"
-              className="w-full py-3 text-xs uppercase font-bold tracking-widest"
-              disabled={busy}
-            >
-              <Mail className="size-4 mr-2" /> {busy ? "Sending…" : "Email me a sign-in code"}
-            </Button>
-          </form>
-        ) : (
-          <div className="space-y-4">
-            <p className="text-xs text-white/70 text-center">
-              Enter the 6-digit code sent to <b className="text-[#fac564]">{email}</b>
-            </p>
-            <div className="flex justify-center py-2">
-              <InputOTP
-                maxLength={6}
-                value={code}
-                onChange={setCode}
-                onComplete={verifyCode}
-              >
-                <InputOTPGroup className="gap-1.5">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <InputOTPSlot
-                      key={i}
-                      index={i}
-                      className="size-11 rounded border-white/20 bg-[#0e1113] text-lg text-white"
-                    />
-                  ))}
-                </InputOTPGroup>
-              </InputOTP>
-            </div>
-            <Button
-              variant="hero"
-              size="lg"
-              className="w-full py-3 text-xs uppercase font-bold tracking-widest"
-              disabled={busy || code.length !== 6}
-              onClick={verifyCode}
-            >
-              {busy ? "Checking…" : "Sign In"}
-            </Button>
-            <div className="text-center">
-              <button
-                type="button"
-                className="text-xs text-white/50 hover:text-[#fac564] underline transition-colors"
-                onClick={() => {
-                  setStep("email");
-                  setCode("");
-                }}
-              >
-                Use a different email
-              </button>
-            </div>
           </div>
-        )}
+
+          <div className="relative">
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-white/40" />
+            <input
+              type="password"
+              required
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={isSignUp ? "Password (min 6 characters)" : "Password"}
+              className="w-full bg-[#0e1113] border border-white/15 pl-10 pr-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-[#fac564] focus:outline-none rounded"
+              aria-label="Password"
+            />
+          </div>
+
+          <Button
+            type="submit"
+            variant="outlineWhite"
+            size="lg"
+            className="w-full py-3 text-xs uppercase font-bold tracking-widest"
+            disabled={busy}
+          >
+            {isSignUp ? (
+              <>
+                <UserPlus className="size-4 mr-2" />
+                {busy ? "Creating Account…" : "Create Account"}
+              </>
+            ) : (
+              <>
+                <LogIn className="size-4 mr-2" />
+                {busy ? "Signing In…" : "Sign In with Email"}
+              </>
+            )}
+          </Button>
+        </form>
+
+        <div className="mt-5 text-center">
+          <button
+            type="button"
+            className="text-xs text-white/60 hover:text-[#fac564] transition-colors"
+            onClick={() => {
+              setIsSignUp(!isSignUp);
+            }}
+          >
+            {isSignUp
+              ? "Already have an account? Sign in"
+              : "Don't have an account? Sign up with email"}
+          </button>
+        </div>
       </div>
     </div>
   );

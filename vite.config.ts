@@ -6,11 +6,15 @@ import tailwindcss from "@tailwindcss/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default ((env: any) => {
+  const asyncHooksShim = path.resolve(__dirname, "src/lib/async-hooks-shim.ts");
+
   if (env.command === "build") {
     return {
       resolve: {
         alias: {
           "@": path.resolve(__dirname, "src"),
+          "node:async_hooks": asyncHooksShim,
+          "async_hooks": asyncHooksShim,
         },
       },
       plugins: [
@@ -30,6 +34,13 @@ export default ((env: any) => {
       server: { entry: "server" },
     },
     vite: {
+      resolve: {
+        alias: {
+          "@": path.resolve(__dirname, "src"),
+          "node:async_hooks": asyncHooksShim,
+          "async_hooks": asyncHooksShim,
+        },
+      },
       server: {
         host: "0.0.0.0",
         port: 3000,
