@@ -27,9 +27,11 @@ export function Logo() {
       className="flex items-center gap-2.5 group py-1"
       aria-label="Subday Pizza home"
     >
-      <span className="grid size-10 place-items-center rounded-full bg-[#fac564] text-xl text-[#121618] shadow-md transition-transform group-hover:scale-105">
-        🍕
-      </span>
+      <img
+        src="/logo.png"
+        alt="Subday Pizza"
+        className="size-11 rounded-full border border-[#fac564]/60 object-cover shadow-md transition-transform group-hover:scale-105"
+      />
       <div className="flex flex-col leading-tight">
         <span className="font-display text-2xl font-bold uppercase tracking-wider text-white">
           SUBDAY<span className="text-[#fac564]">PIZZA</span>

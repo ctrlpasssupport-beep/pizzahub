@@ -1,7 +1,18 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore, doc, getDocFromServer, setLogLevel } from "firebase/firestore";
-import firebaseConfig from "@/firebase-applet-config.json";
+import fileConfig from "@/firebase-applet-config.json";
+
+// Read Firebase configuration from environment variables with fallback to config file
+export const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || fileConfig.apiKey,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || fileConfig.authDomain,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || fileConfig.projectId,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || fileConfig.storageBucket,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || fileConfig.messagingSenderId,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || fileConfig.appId,
+  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || fileConfig.firestoreDatabaseId,
+};
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
@@ -30,19 +41,6 @@ async function testConnection() {
     const message = error instanceof Error ? error.message : String(error);
     if (message.includes("the client is offline")) {
       console.warn("[Firebase] Operating in offline mode.");
-    } else if (
-      message.includes("token-service") ||
-      message.includes("securetoken") ||
-      message.includes("Fetching auth token failed")
-    ) {
-      console.warn("[Firebase] Auth token service propagating. Operating in guest mode.");
-      try {
-        if (auth.currentUser) {
-          await auth.signOut();
-        }
-      } catch {
-        // ignore
-      }
     }
   }
 }

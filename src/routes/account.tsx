@@ -48,9 +48,11 @@ function AccountPage() {
               className="size-20 rounded-full border-2 border-[#fac564] object-cover shadow-lg"
             />
           ) : (
-            <span className="grid size-16 place-items-center rounded-full bg-[#fac564] text-2xl text-[#121618]">
-              🍕
-            </span>
+            <img
+              src="/logo.png"
+              alt="Subday Pizza"
+              className="size-20 rounded-full border-2 border-[#fac564] object-cover shadow-lg"
+            />
           )}
           <h1 className="mt-4 font-display text-2xl sm:text-3xl font-bold uppercase tracking-wider text-white">
             {user?.displayName ? `Hi, ${user.displayName.split(" ")[0]}!` : "My Account"}

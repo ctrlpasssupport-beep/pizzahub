@@ -25,6 +25,11 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
+    // Test collection for boot connectivity check
+    match /test/{docId} {
+      allow get: if isValidId(docId);
+    }
+
     // User profiles
     match /users/{userId} {
       allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());

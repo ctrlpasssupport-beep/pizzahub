@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#181d20"/>
+      <stop offset="100%" stop-color="#0e1113"/>
+    </linearGradient>
+    <linearGradient id="goldRim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffd56b"/>
+      <stop offset="50%" stop-color="#fac564"/>
+      <stop offset="100%" stop-color="#d9992d"/>
+    </linearGradient>
+    <linearGradient id="crust" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#e08e2b"/>
+      <stop offset="50%" stop-color="#f5a623"/>
+      <stop offset="100%" stop-color="#cf721b"/>
+    </linearGradient>
+    <linearGradient id="cheese" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffd56b"/>
+      <stop offset="50%" stop-color="#fac564"/>
+      <stop offset="100%" stop-color="#e09e2b"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Circular Outer Border -->
+  <circle cx="32" cy="32" r="30" fill="url(#bg)" stroke="url(#goldRim)" stroke-width="3"/>
+
+  <!-- Pizza Slice Body -->
+  <path d="M17 21 L47 21 L32 50 Z" fill="url(#cheese)" stroke="#c47814" stroke-width="0.8" stroke-linejoin="round"/>
+
+  <!-- Melty Cheese Drips -->
+  <path d="M22 23 Q24 29 26 23 Q29 31 32 24 Q35 30 38 23" fill="none" stroke="#fff0ba" stroke-width="1.8" stroke-linecap="round"/>
+
+  <!-- Golden Crust -->
+  <path d="M15 20 Q32 14 49 20 Q47 15 32 15 Q17 15 15 20 Z" fill="url(#crust)"/>
+  <path d="M15 20 Q32 14 49 20" fill="none" stroke="#ffd995" stroke-width="1.4" stroke-linecap="round"/>
+
+  <!-- Pepperoni -->
+  <circle cx="28" cy="28" r="4" fill="#d94335" stroke="#9e2217" stroke-width="0.8"/>
+  <circle cx="27" cy="27" r="1.2" fill="#ff7a6b" opacity="0.6"/>
+
+  <circle cx="38" cy="31" r="3.6" fill="#d94335" stroke="#9e2217" stroke-width="0.8"/>
+  <circle cx="37" cy="30" r="1" fill="#ff7a6b" opacity="0.6"/>
+
+  <circle cx="32" cy="40" r="3.2" fill="#d94335" stroke="#9e2217" stroke-width="0.8"/>
+  <circle cx="31.2" cy="39.2" r="0.9" fill="#ff7a6b" opacity="0.6"/>
+
+  <!-- Basil Leaves -->
+  <path d="M22 35 C20 33 24 31 26 34 C25 36 23 36 22 35 Z" fill="#48a042"/>
+  <path d="M37 23 C39 22 40 25 37 26 C36 25 36 23 37 23 Z" fill="#48a042"/>
+</svg>

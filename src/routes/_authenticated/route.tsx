@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated")({
           unsubscribe();
           resolve();
         });
-        setTimeout(resolve, 300);
+        setTimeout(resolve, 1000);
       });
     }
     if (!auth.currentUser) throw redirect({ to: "/auth" });

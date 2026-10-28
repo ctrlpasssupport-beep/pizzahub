@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageHeader } from "@/components/site/PageHeader";
 import { categories } from "@/data/menu";
 import { menuQuery, offersQuery, partyQuery, type Offer } from "@/lib/catalog";
+import { useSessionUser } from "@/hooks/use-session";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -30,19 +31,12 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 function AdminPage() {
-  const role = useQuery({
-    queryKey: ["is-admin"],
-    queryFn: async () => {
-      const { auth } = await import("@/lib/firebase");
-      const u = auth.currentUser;
-      if (!u || !u.email) return false;
-      return (
-        u.email === "ayushsharma80104@gmail.com" ||
-        u.email.endsWith("@google.com")
-      );
-    },
-  });
-  if (role.isLoading)
+  const user = useSessionUser();
+  const isAdmin =
+    user?.email === "ayushsharma80104@gmail.com" ||
+    (user?.email?.endsWith("@google.com") ?? false);
+
+  if (user === undefined) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center bg-[#121618]">
         <p className="font-cursive text-2xl text-[#fac564] animate-pulse">
@@ -50,7 +44,9 @@ function AdminPage() {
         </p>
       </div>
     );
-  if (!role.data)
+  }
+
+  if (!isAdmin) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center bg-[#121618] px-4 py-20 text-center">
         <div className="max-w-md p-8 rounded-2xl bg-[#15191b] border border-white/10 text-center shadow-2xl">
@@ -59,14 +55,22 @@ function AdminPage() {
             Admin Access Only
           </h1>
           <p className="mt-3 text-sm text-white/60">
-            This account does not have store administrator privileges. Please sign in with an authorized account.
+            Signed in as: <span className="text-[#fac564] font-semibold">{user?.email || "Guest"}</span>
+            <br />
+            Please sign in with an authorized store administrator account.
           </p>
-          <Button variant="hero" className="mt-6" asChild>
-            <Link to="/">Return to Home</Link>
-          </Button>
+          <div className="mt-6 flex flex-col gap-2">
+            <Button variant="hero" asChild>
+              <Link to="/auth">Switch Account</Link>
+            </Button>
+            <Button variant="outlineWhite" asChild>
+              <Link to="/">Return to Home</Link>
+            </Button>
+          </div>
         </div>
       </div>
     );
+  }
 
   return (
     <div className="bg-[#121618] min-h-screen pb-20">
